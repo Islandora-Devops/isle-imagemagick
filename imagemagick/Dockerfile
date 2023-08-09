@@ -34,7 +34,9 @@ RUN --mount=type=bind,readwrite=true,source=build,target=/build \
         lcms2-dev \
         libheif-dev \
         libjpeg-turbo-dev \
+        libjxl-dev \
         libpng-dev \
+        libraw-dev \
         librsvg-dev \
         libtool \
         libwebp-dev \

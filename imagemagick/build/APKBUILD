@@ -5,8 +5,8 @@
 # Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 pkgname=imagemagick
 _pkgname=ImageMagick
-pkgver=7.1.0.16
-pkgrel=1
+pkgver=7.1.1.13
+pkgrel=0
 _pkgver=${pkgver%.*}-${pkgver##*.}
 _abiver=7
 pkgdesc="Collection of tools and libraries for many image formats"
@@ -25,6 +25,8 @@ makedepends="
 	libheif-dev
 	libjpeg-turbo-dev
 	libpng-dev
+	libraw-dev
+	librsvg-dev
 	libtool
 	libwebp-dev
 	libx11-dev
@@ -35,13 +37,8 @@ makedepends="
 	pango-dev
 	perl-dev
 	tiff-dev
-	zlib-dev"
-
-case "$CARCH" in
-	s390x|riscv64) ;;
-	mips64) options="$options !check" ;;
-	*) makedepends="$makedepends librsvg-dev" ;;
-esac
+	zlib-dev
+	"
 
 checkdepends="freetype fontconfig ghostscript ghostscript-fonts lcms2 graphviz"
 subpackages="
@@ -50,11 +47,33 @@ subpackages="
 source="https://imagemagick.org/archive/releases/ImageMagick-$_pkgver.tar.xz"
 builddir="$srcdir/$_pkgname-$_pkgver"
 
+case "$CARCH" in
+s390x)
+	;;
+*)
+	makedepends="$makedepends libjxl-dev"
+	_jxl="--with-jxl"
+	;;
+esac
+
 # secfixes:
+#   7.1.0.52-r0:
+#     - CVE-2022-44267
+#     - CVE-2022-44268
+#   7.1.0.47-r0:
+#     - CVE-2022-3213
+#   7.1.0.30-r0:
+#     - CVE-2022-1115
+#     - CVE-2022-1114
+#     - CVE-2022-2719
+#   7.1.0.24-r0:
+#     - CVE-2022-0284
 #   7.1.0.10-r0:
 #     - CVE-2021-39212
 #   7.1.0.0-r0:
 #     - CVE-2021-34183
+#   7.0.11.9-r0:
+#     - CVE-2021-3574
 #   7.0.11.1-r0:
 #     - CVE-2021-20241
 #     - CVE-2021-20243
@@ -68,10 +87,17 @@ builddir="$srcdir/$_pkgname-$_pkgver"
 #     - CVE-2021-20313
 #   7.0.10.57-r0:
 #     - CVE-2021-20176
+#     - CVE-2021-20224
 #   7.0.10.42-r0:
 #     - CVE-2020-29599
 #   7.0.10.35-r0:
 #     - CVE-2020-27560
+#   7.0.10.31-r0:
+#     - CVE-2021-3596
+#     - CVE-2022-28463
+#     - CVE-2022-32545
+#     - CVE-2022-32546
+#     - CVE-2022-32547
 #   7.0.10.18-r0:
 #     - CVE-2020-13902
 #   7.0.10.8-r0:
@@ -133,11 +159,6 @@ builddir="$srcdir/$_pkgname-$_pkgver"
 #     - CVE-2019-10649
 
 build() {
-	case "$CARCH" in
-		s390x) ;;
-		*) _conf_args="--with-rsvg" ;;
-	esac
-
 	# fix doc dir, Gentoo bug 91911
 	sed -i -e \
 		's:DOCUMENTATION_PATH="$DATA_DIR/doc/$DOCUMENTATION_RELATIVE_PATH":DOCUMENTATION_PATH="/usr/share/doc/imagemagick":g' \
@@ -198,5 +219,5 @@ package() {
 }
 
 sha512sums="
-6894e51ea96b49cd7aafb91d1e05b02f802bccc79121a6b6e65d2122cf97a27cd26bba393edb0b8d4c354ca95c2db0986257fd0d08756067dddb51240a346e2d  ImageMagick-7.1.0-16.tar.xz
+6f37da80abbb0e62959ef65145bff0de7c47e1a203858bf7b17535d7d26e8bbe351ec9b9ead1a679f5e48ecf8ffc339bec92a01cf4f78f03e7c0c288de4dc8e2  ImageMagick-7.1.1-13.tar.xz
 "
