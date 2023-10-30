@@ -64,7 +64,7 @@ target "imagemagick-common" {
     # It will be the digest printed when you do: docker pull alpine:3.17.1
     # Not the one displayed on DockerHub.
     # N.B. This should match the value used in <https://github.com/Islandora-Devops/isle-buildkit>
-    alpine = "docker-image://alpine:3.18.3@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3a4a54ba44a"
+    alpine = "docker-image://alpine:3.18.4@sha256:eece025e432126ce23f223450a0326fbebde39cdf496a85d8c016293fc851978"
   }
 }
 
