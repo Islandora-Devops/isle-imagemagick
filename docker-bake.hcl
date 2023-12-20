@@ -11,6 +11,14 @@ variable "TAG" {
   default = "local"
 }
 
+###############################################################################
+# Functions
+###############################################################################
+function hostArch {
+  params = []
+  result = equal("linux/amd64", BAKE_LOCAL_PLATFORM) ? "amd64" : "arm64" # Only two platforms supported.
+}
+
 function "tags" {
   params = [image, arch]
   result = ["${REPOSITORY}/${image}:${TAG}-${arch}"]
@@ -23,10 +31,18 @@ function "cacheFrom" {
 
 function "cacheTo" {
   params = [image, arch]
-  result =  ["type=registry,oci-mediatypes=true,mode=max,compression=estargz,compression-level=5,ref=${REPOSITORY}/cache:${image}-${TAG}-${arch}"]
+  result = ["type=registry,oci-mediatypes=true,mode=max,compression=estargz,compression-level=5,ref=${REPOSITORY}/cache:${image}-${TAG}-${arch}"]
 }
 
-# No default target is specified.
+###############################################################################
+# Groups
+###############################################################################
+group "default" {
+  targets = [
+    "imagemagick",
+  ]
+}
+
 group "amd64" {
   targets = [
     "imagemagick-amd64",
@@ -47,6 +63,9 @@ group "ci" {
   ]
 }
 
+###############################################################################
+# Targets
+###############################################################################
 target "common" {
   args = {
     # Required for reproduciable builds.
@@ -58,7 +77,7 @@ target "common" {
 
 target "imagemagick-common" {
   inherits = ["common"]
-  context = "imagemagick"
+  context  = "imagemagick"
   contexts = {
     # The digest (sha256 hash) is not platform specific but the digest for the manifest of all platforms.
     # It will be the digest printed when you do: docker pull alpine:3.17.1
@@ -69,10 +88,10 @@ target "imagemagick-common" {
 }
 
 target "imagemagick-amd64" {
-  inherits = ["imagemagick-common"]
-  tags = tags("imagemagick", "amd64")
+  inherits   = ["imagemagick-common"]
+  tags       = tags("imagemagick", "amd64")
   cache-from = cacheFrom("imagemagick", "amd64")
-  platforms = ["linux/amd64"]
+  platforms  = ["linux/amd64"]
 }
 
 target "imagemagick-amd64-ci" {
@@ -81,13 +100,19 @@ target "imagemagick-amd64-ci" {
 }
 
 target "imagemagick-arm64" {
-  inherits = ["imagemagick-common"]
-  tags = tags("imagemagick", "arm64")
+  inherits   = ["imagemagick-common"]
+  tags       = tags("imagemagick", "arm64")
   cache-from = cacheFrom("imagemagick", "arm64")
-  platforms = ["linux/arm64"]
+  platforms  = ["linux/arm64"]
 }
 
 target "imagemagick-arm64-ci" {
   inherits = ["imagemagick-arm64"]
   cache-to = cacheTo("imagemagick", "arm64")
+}
+
+target "imagemagick" {
+  inherits   = ["imagemagick-common"]
+  cache-from = cacheFrom("imagemagick", hostArch())
+  tags       = tags("imagemagick", "")
 }
