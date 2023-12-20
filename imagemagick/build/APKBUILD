@@ -5,7 +5,7 @@
 # Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 pkgname=imagemagick
 _pkgname=ImageMagick
-pkgver=7.1.1.13
+pkgver=7.1.1.23
 pkgrel=0
 _pkgver=${pkgver%.*}-${pkgver##*.}
 _abiver=7
@@ -16,8 +16,11 @@ license="ImageMagick"
 options="libtool"
 depends="
 	ghostscript"
+depends_dev="$pkgname=$pkgver-r$pkgrel"
+install="$pkgname.post-upgrade"
 makedepends="
 	chrpath
+	fftw-dev
 	fontconfig-dev
 	freetype-dev
 	ghostscript-dev
@@ -43,6 +46,14 @@ makedepends="
 checkdepends="freetype fontconfig ghostscript ghostscript-fonts lcms2 graphviz"
 subpackages="
 	$pkgname-libs
+	$pkgname-heic
+	$pkgname-jpeg
+	$pkgname-pango
+	$pkgname-pdf
+	$pkgname-raw
+	$pkgname-svg
+	$pkgname-tiff
+	$pkgname-webp
 	"
 source="https://imagemagick.org/archive/releases/ImageMagick-$_pkgver.tar.xz"
 builddir="$srcdir/$_pkgname-$_pkgver"
@@ -52,11 +63,14 @@ s390x)
 	;;
 *)
 	makedepends="$makedepends libjxl-dev"
+	subpackages="$subpackages $pkgname-jxl"
 	_jxl="--with-jxl"
 	;;
 esac
 
 # secfixes:
+#   7.1.1.21-r0:
+#     - CVE-2023-5341
 #   7.1.0.52-r0:
 #     - CVE-2022-44267
 #     - CVE-2022-44268
@@ -159,10 +173,9 @@ esac
 #     - CVE-2019-10649
 
 build() {
-	# fix doc dir, Gentoo bug 91911
-	sed -i -e \
-		's:DOCUMENTATION_PATH="$DATA_DIR/doc/$DOCUMENTATION_RELATIVE_PATH":DOCUMENTATION_PATH="/usr/share/doc/imagemagick":g' \
-		configure
+	# pretty much doubles the performance
+	CFLAGS="$CFLAGS -O2" \
+	CXXFLAGS="$CXXFLAGS -O2" \
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -171,32 +184,29 @@ build() {
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--disable-static \
-		--disable-openmp \
-		--with-threads \
-		--without-x \
-		--with-tiff \
-		--with-png \
-		--with-webp \
-		--with-gslib \
+		--with-fftw \
 		--with-gs-font-dir=/usr/share/fonts/Type1 \
+		--with-gslib \
+		--with-hdri \
 		--with-heic \
 		--with-modules \
-		--with-xml \
 		--without-perl \
 		--with-perl-options="PREFIX=/usr INSTALLDIRS=vendor" \
-		--with-dps=no \
-		--with-fpx=no \
-		--with-gslib=no \
-		--with-gvc=no \
-		--with-rsvg=no \
+		--with-png \
+		--with-rsvg \
+		--with-threads \
+		--with-tiff \
+		--with-webp \
+		--without-x \
+		--with-xml \
 		--without-magick-plus-plus \
-		$_conf_args
+		$_jxl
 	make -j $(nproc)
 }
 
 check() {
 	# Test disabled to reduce build time, manually check if you are modifing this package script.
-	# make check -j $(nproc)
+	#make check -j $(nproc)
 	return 0
 }
 
@@ -218,6 +228,62 @@ package() {
 		-o -name '*.bs' \) -delete
 }
 
+heic() {
+	pkgdesc="$pkgdesc (HEIC support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel libheif"
+	amove usr/lib/ImageMagick-*/modules-*/coders/heic.*
+}
+
+jpeg() {
+	pkgdesc="$pkgdesc (JPEG support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel libjpeg-turbo"
+	amove usr/lib/ImageMagick-*/modules-*/coders/jpeg.*
+}
+
+raw() {
+	pkgdesc="$pkgdesc (RAW support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel libraw"
+	amove usr/lib/ImageMagick-*/modules-*/coders/dng.*
+}
+
+jxl() {
+	pkgdesc="$pkgdesc (JpegXL support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel libjxl"
+	amove usr/lib/ImageMagick-*/modules-*/coders/jxl.*
+}
+
+pango() {
+	pkgdesc="$pkgdesc (pango support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel pango"
+	amove usr/lib/ImageMagick-*/modules-*/coders/pango.*
+}
+
+pdf() {
+	pkgdesc="$pkgdesc (PDF support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel ghostscript"
+	amove \
+		usr/lib/ImageMagick-*/modules-*/coders/pdf.* \
+		usr/lib/ImageMagick-*/modules-*/coders/ps.*
+}
+
+svg() {
+	pkgdesc="$pkgdesc (SVG support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel librsvg"
+	amove usr/lib/ImageMagick-*/modules-*/coders/svg.*
+}
+
+tiff() {
+	pkgdesc="$pkgdesc (TIFF support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel tiff"
+	amove usr/lib/ImageMagick-*/modules-*/coders/tiff.*
+}
+
+webp() {
+	pkgdesc="$pkgdesc (WebP support modules)"
+	install_if="$pkgname=$pkgver-r$pkgrel libwebp"
+	amove usr/lib/ImageMagick-*/modules-*/coders/webp.*
+}
+
 sha512sums="
-6f37da80abbb0e62959ef65145bff0de7c47e1a203858bf7b17535d7d26e8bbe351ec9b9ead1a679f5e48ecf8ffc339bec92a01cf4f78f03e7c0c288de4dc8e2  ImageMagick-7.1.1-13.tar.xz
+a6d88de2bbecfa53af565de7df89271c85e79c77ad34be5c3bd79254286a9477a71bf847219168e4fc0b9f354378569c7788b52c75d4daab0e692825d33eac08  ImageMagick-7.1.1-23.tar.xz
 "

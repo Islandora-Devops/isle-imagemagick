@@ -21,8 +21,7 @@ SHELL ["/bin/bash", "-c"]
 ARG TARGETARCH
 
 # Platform specific does require arch specific identifier.
-RUN --mount=type=bind,readwrite=true,source=build,target=/build \
-    --mount=type=cache,id=imagemagick-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \
+RUN --mount=type=cache,id=imagemagick-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \
     export PACKAGES=(\
         chrpath \
         fftw-dev \
@@ -51,7 +50,9 @@ RUN --mount=type=bind,readwrite=true,source=build,target=/build \
         tiff-dev \
         zlib-dev \
     ) && \
-    sudo apk add "${PACKAGES[@]}" && \
+    sudo apk add "${PACKAGES[@]}"
+
+RUN --mount=type=bind,readwrite=true,source=build,target=/build \
     sudo mkdir -p /packages && \
     sudo chown -R builder /build && \
     cd /build && \
