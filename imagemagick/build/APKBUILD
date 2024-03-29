@@ -5,7 +5,7 @@
 # Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 pkgname=imagemagick
 _pkgname=ImageMagick
-pkgver=7.1.1.23
+pkgver=7.1.1.26
 pkgrel=0
 _pkgver=${pkgver%.*}-${pkgver##*.}
 _abiver=7
@@ -284,6 +284,7 @@ webp() {
 	amove usr/lib/ImageMagick-*/modules-*/coders/webp.*
 }
 
+
 sha512sums="
-a6d88de2bbecfa53af565de7df89271c85e79c77ad34be5c3bd79254286a9477a71bf847219168e4fc0b9f354378569c7788b52c75d4daab0e692825d33eac08  ImageMagick-7.1.1-23.tar.xz
+55b93b30781b3a5d90e43caf33dd55bdc6b8e2e0ed11fcbee64ba4d2d98a73b41c9cfc7efafb7efca1bca5bcf27d98862d05ab524b09a4047a49f3d8f6a098a7  ImageMagick-7.1.1-26.tar.xz
 "
