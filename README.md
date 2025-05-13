@@ -1,3 +1,6 @@
+> [!WARNING]
+> This repo has [moved to isle-buildkit](https://github.com/Islandora-Devops/isle-buildkit/tree/main/imagemagick)
+
 # ISLE: ImageMagick <!-- omit in toc -->
 
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
